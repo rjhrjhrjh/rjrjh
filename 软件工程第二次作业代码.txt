@@ -1,0 +1,31 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+int max_subarray_sum(vector<int>& nums) {
+    int n = nums.size();
+    int max_sum = 0; // 记录最大连续子数组和
+    int current_sum = 0; // 记录当前连续子数组和
+
+    for (int i = 0; i < n; ++i) {
+        current_sum = max(0, current_sum + nums[i]); // 更新当前连续子数组和
+        max_sum = max(max_sum, current_sum); // 更新最大连续子数组和
+    }
+
+    return max_sum;
+}
+
+int main() {
+    vector<int> nums1 = { -2, 11, -4, 13, -5, -2 }; // 示例输入
+    cout << "{ -2, 11, -4, 13, -5, -2 }的最大连续子数组和为: " << max_subarray_sum(nums1) << endl; // 输出结果
+    vector<int> nums2 = { -5, 16, -9, 3, -2, -1 }; // 示例输入
+    cout << "{ -5, 16, -9, 3, -2, -1 }最大连续子数组和为: " << max_subarray_sum(nums2) << endl; // 输出结果
+    vector<int> nums3 = { -2, 11, -4, 13, -5, -2 }; // 示例输入
+    cout << "{ -2, 11, -4, 13, -5, -2 }最大连续子数组和为: " << max_subarray_sum(nums3) << endl; // 输出结果
+    vector<int> nums4 = { -2, 11, -4, 13, -5, -2 }; // 示例输入
+    cout << "{ -2, 11, -4, 13, -5, -2 }最大连续子数组和为: " << max_subarray_sum(nums4) << endl; // 输出结果
+
+    return 0;
+}
