@@ -1,0 +1,139 @@
+#include <iostream>
+#include <vector>
+#include <ctime>
+#include <cstdlib>
+
+using namespace std;
+
+const int SIZE = 10;
+const int MINES = 15;
+
+void printBoard(const vector<vector<char>>& board) {
+    cout << "  ";
+    for (int i = 0; i < SIZE; ++i) {
+        cout << i << " ";
+    }
+    cout << endl;
+
+    for (int i = 0; i < SIZE; ++i) {
+        cout << i << " ";
+        for (int j = 0; j < SIZE; ++j) {
+            cout << board[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
+bool isValid(int x, int y) {
+    return x >= 0 && x < SIZE&& y >= 0 && y < SIZE;
+}
+
+int countAdjacentMines(const vector<vector<char>>& board, int x, int y) {
+    int count = 0;
+    for (int i = -1; i <= 1; ++i) {
+        for (int j = -1; j <= 1; ++j) {
+            if (isValid(x + i, y + j) && board[x + i][y + j] == '*') {
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+void placeMines(vector<vector<char>>& board) {
+    int count = 0;
+    while (count < MINES) {
+        int x = rand() % SIZE;
+        int y = rand() % SIZE;
+        if (board[x][y] != '*') {
+            board[x][y] = '*';
+            count++;
+        }
+    }
+}
+
+void initializeBoard(vector<vector<char>>& board) {
+    for (int i = 0; i < SIZE; ++i) {
+        vector<char> row;
+        for (int j = 0; j < SIZE; ++j) {
+            row.push_back('.');
+        }
+        board.push_back(row);
+    }
+}
+
+void updateBoard(vector<vector<char>>& board) {
+    for (int i = 0; i < SIZE; ++i) {
+        for (int j = 0; j < SIZE; ++j) {
+            if (board[i][j] != '*') {
+                int count = countAdjacentMines(board, i, j);
+                if (count > 0) {
+                    board[i][j] = count + '0';
+                }
+            }
+        }
+    }
+}
+
+void revealBoard(vector<vector<char>>& board, int x, int y) {
+    if (!isValid(x, y) || board[x][y] != '.') {
+        return;
+    }
+
+    int count = countAdjacentMines(board, x, y);
+    if (count > 0) {
+        board[x][y] = count + '0';
+    }
+    else {
+        board[x][y] = ' ';
+        for (int i = -1; i <= 1; ++i) {
+            for (int j = -1; j <= 1; ++j) {
+                revealBoard(board, x + i, y + j);
+            }
+        }
+    }
+}
+
+int main() {
+    srand(time(0));
+    vector<vector<char>> board;
+    initializeBoard(board);
+    placeMines(board);
+    updateBoard(board);
+
+    bool gameOver = false;
+    while (!gameOver) {
+        printBoard(board);
+        cout << "Enter row and column (separated by space) to reveal: ";
+        int row, col;
+        cin >> row >> col;
+
+        if (!isValid(row, col) || board[row][col] != '.') {
+            cout << "Invalid move! Try again." << endl;
+        }
+        else {
+            if (board[row][col] == '*') {
+                cout << "Game Over! You hit a mine." << endl;
+                gameOver = true;
+            }
+            else {
+                revealBoard(board, row, col);
+                bool win = true;
+                for (int i = 0; i < SIZE; ++i) {
+                    for (int j = 0; j < SIZE; ++j) {
+                        if (board[i][j] == '.') {
+                            win = false;
+                            break;
+                        }
+                    }
+                }
+                if (win) {
+                    cout << "Congratulations! You won the game!" << endl;
+                    gameOver = true;
+                }
+            }
+        }
+    }
+
+    return 0;
+}
