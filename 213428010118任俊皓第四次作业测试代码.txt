@@ -1,0 +1,150 @@
+#include <gtest/gtest.h>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <cstdlib>
+#include <ctime>
+#include <iomanip>
+#include "pch.h"
+using namespace std;
+
+// 生成一个0到maxNum之间的随机整数
+int generateRandomNumber(int maxNum) {
+    return rand() % (maxNum + 1);
+}
+
+// 生成一个随机的运算符（+、-、*、/）
+char generateRandomOperator(bool allowAddition, bool allowSubtraction, bool allowMultiplication, bool allowDivision) {
+    char operators[] = { '+', '-', '*', '/' };
+    int numOperators = 0;
+    if (allowAddition) operators[numOperators++] = '+';
+    if (allowSubtraction) operators[numOperators++] = '-';
+    if (allowMultiplication) operators[numOperators++] = '*';
+    if (allowDivision) operators[numOperators++] = '/';
+    int randomIndex = rand() % numOperators;
+    return operators[randomIndex];
+}
+
+// 生成一个随机的四则运算表达式
+string generateRandomExpression(int maxNum, bool withParentheses, bool withDecimal, bool allowAddition, bool allowSubtraction, bool allowMultiplication, bool allowDivision) {
+    stringstream ss;
+    int operand1 = generateRandomNumber(maxNum);
+    int operand2 = generateRandomNumber(maxNum);
+
+    // 随机决定是否使用小数
+    bool useDecimal = withDecimal && (rand() % 2 == 0);
+
+    if (useDecimal) {
+        double decimalOperand1 = static_cast<double>(operand1) + static_cast<double>(generateRandomNumber(maxNum)) / 10;
+        double decimalOperand2 = static_cast<double>(operand2) + static_cast<double>(generateRandomNumber(maxNum)) / 10;
+        ss << fixed << setprecision(1) << decimalOperand1;
+        ss << " " << generateRandomOperator(allowAddition, allowSubtraction, allowMultiplication, allowDivision) << " ";
+        ss << fixed << setprecision(1) << decimalOperand2;
+    }
+    else {
+        ss << operand1;
+        ss << " " << generateRandomOperator(allowAddition, allowSubtraction, allowMultiplication, allowDivision) << " ";
+        ss << operand2;
+    }
+
+    if (withParentheses) {
+        string expr = ss.str();
+        return "(" + expr + ")";
+    }
+    else {
+        return ss.str();
+    }
+}
+
+// 输出表达式到指定的输出流
+void outputExpressions(int maxNum, bool withParentheses, bool withDecimal, bool allowAddition, bool allowSubtraction, bool allowMultiplication, bool allowDivision, ostream& out, int numExpressions) {
+    for (int i = 0; i < numExpressions; ++i) {
+        out << generateRandomExpression(maxNum, withParentheses, withDecimal, allowAddition, allowSubtraction, allowMultiplication, allowDivision) << endl;
+    }
+}
+
+// Test fixture for testing generateRandomNumber function
+class GenerateRandomNumberTest : public ::testing::Test {
+protected:
+    virtual void SetUp() {
+        srand(time(0)); // Initialize random seed
+    }
+};
+
+// Test generateRandomNumber function
+TEST_F(GenerateRandomNumberTest, ReturnsRandomNumberWithinRange) {
+    // Test with maxNum = 10
+    for (int i = 0; i < 100; ++i) {
+        int randomNum = generateRandomNumber(10);
+        EXPECT_GE(randomNum, 0); // Random number should be greater than or equal to 0
+        EXPECT_LE(randomNum, 10); // Random number should be less than or equal to 10
+    }
+
+    // Test with maxNum = 100
+    for (int i = 0; i < 100; ++i) {
+        int randomNum = generateRandomNumber(100);
+        EXPECT_GE(randomNum, 0); // Random number should be greater than or equal to 0
+        EXPECT_LE(randomNum, 100); // Random number should be less than or equal to 100
+    }
+}
+
+// Test fixture for testing generateRandomOperator function
+class GenerateRandomOperatorTest : public ::testing::Test {
+protected:
+    virtual void SetUp() {
+        srand(time(0)); // Initialize random seed
+    }
+};
+
+// Test generateRandomOperator function
+TEST_F(GenerateRandomOperatorTest, ReturnsRandomOperator) {
+    const bool allowAddition = true;
+    const bool allowSubtraction = true;
+    const bool allowMultiplication = true;
+    const bool allowDivision = true;
+
+    std::stringstream operators;
+    for (int i = 0; i < 100; ++i) {
+        char op = generateRandomOperator(allowAddition, allowSubtraction, allowMultiplication, allowDivision);
+        operators << op;
+    }
+
+    // The generated operators should contain only the allowed operators
+    EXPECT_NE(operators.str().find('+'), std::string::npos); // Addition operator should be present
+    EXPECT_NE(operators.str().find('-'), std::string::npos); // Subtraction operator should be present
+    EXPECT_NE(operators.str().find('*'), std::string::npos); // Multiplication operator should be present
+    EXPECT_NE(operators.str().find('/'), std::string::npos); // Division operator should be present
+}
+
+// Test fixture for testing generateRandomExpression function
+class GenerateRandomExpressionTest : public ::testing::Test {
+protected:
+    virtual void SetUp() {
+        srand(time(0)); // Initialize random seed
+    }
+};
+
+// Test generateRandomExpression function
+TEST_F(GenerateRandomExpressionTest, ReturnsRandomExpression) {
+    const bool withParentheses = true;
+    const bool withDecimal = true;
+    const bool allowAddition = true;
+    const bool allowSubtraction = true;
+    const bool allowMultiplication = true;
+    const bool allowDivision = true;
+
+    std::stringstream expressions;
+    for (int i = 0; i < 100; ++i) {
+        expressions << generateRandomExpression(100, withParentheses, withDecimal, allowAddition, allowSubtraction, allowMultiplication, allowDivision) << std::endl;
+    }
+
+    // Ensure that expressions are generated correctly
+    EXPECT_GT(expressions.str().size(), 0); // Generated expressions should not be empty
+    // Additional custom validations can be added based on expected expression formats
+}
+
+// Main function for running the tests
+int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
